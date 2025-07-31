@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển Tiếng Việt sang Ngôn ngữ Ký hiệu (VSL)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .result-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        /* POS Tag Styles */
+        .pos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .pos-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: transform 0.2s;
+        }
+
+        .pos-tag:hover {
+            transform: scale(1.05);
+        }
+
+        .pos-tag .word {
+            font-weight: normal;
+        }
+
+        .pos-tag .type {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* POS Tag Colors */
+        .pos-NOUN {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 2px solid #90caf9;
+        }
+
+        .pos-PROPN {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border: 2px solid #ce93d8;
+        }
+
+        .pos-VERB {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 2px solid #81c784;
+        }
+
+        .pos-ADJ {
+            background: #fff3e0;
+            color: #ef6c00;
+            border: 2px solid #ffb74d;
+        }
+
+        .pos-ADV {
+            background: #fce4ec;
+            color: #c2185b;
+            border: 2px solid #f06292;
+        }
+
+        .pos-PRON {
+            background: #e0f2f1;
+            color: #00695c;
+            border: 2px solid #4db6ac;
+        }
+
+        .pos-NUM {
+            background: #f1f8e9;
+            color: #558b2f;
+            border: 2px solid #aed581;
+        }
+
+        .pos-DET {
+            background: #e8eaf6;
+            color: #303f9f;
+            border: 2px solid #9fa8da;
+        }
+
+        .pos-ADP {
+            background: #fff8e1;
+            color: #f57f17;
+            border: 2px solid #fff176;
+        }
+
+        .pos-CCONJ {
+            background: #fafafa;
+            color: #424242;
+            border: 2px solid #bdbdbd;
+        }
+
+        .pos-SCONJ {
+            background: #f5f5f5;
+            color: #616161;
+            border: 2px solid #9e9e9e;
+        }
+
+        .pos-PART {
+            background: #e1f5fe;
+            color: #0277bd;
+            border: 2px solid #4fc3f7;
+        }
+
+        .pos-INTJ {
+            background: #ffebee;
+            color: #d32f2f;
+            border: 2px solid #ef5350;
+        }
+
+        .pos-PUNCT {
+            background: #f9fbe7;
+            color: #689f38;
+            border: 2px solid #9ccc65;
+        }
+
+        .pos-X {
+            background: #efebe9;
+            color: #5d4037;
+            border: 2px solid #a1887f;
+        }
+
+        .pos-SYM {
+            background: #e8eaf6;
+            color: #512da8;
+            border: 2px solid #9575cd;
+        }
+
+        .gloss-output {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            line-height: 1.5;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 1px;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            border-left-color: #d32f2f;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Table Styles */
+        .pos-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .pos-table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .pos-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .pos-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .pos-table .tag-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        /* Principle Section */
+        .principle-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .principle-section h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .vsl-order {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid #667eea;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 24px;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .example-box {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .example-box .original {
+            font-weight: normal;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .example-box .converted {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                text-align: center;
+            }
+
+            .pos-container {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧠 Chuyển Tiếng Việt sang Ngôn ngữ Ký hiệu (VSL)</h1>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('converter')">🚀 Chuyển đổi</button>
+            <button class="tab" onclick="switchTab('pos-guide')">🏷️ Bảng POS Tags</button>
+            <button class="tab" onclick="switchTab('principles')">📚 Nguyên lý VSL</button>
+        </div>
+
+        <!-- Tab 1: Converter -->
+        <div id="converter" class="tab-content active">
+            <div class="input-section">
+                <label for="inputText">Nhập câu tiếng Việt:</label>
+                <textarea id="inputText" placeholder="Ví dụ: Tôi đang ăn cơm">Tôi đang ăn cơm</textarea>
+                <button id="convertBtn" onclick="processInput()">🚀 Chuyển sang VSL</button>
+                <div id="status" class="status"></div>
+            </div>
+
+            <div class="result-section">
+                <h3>🏷️ Phân tích từ loại (POS Tags)</h3>
+                <div id="posOutput" class="loading">Nhấn nút "Chuyển sang VSL" để xem kết quả phân tích từ loại...</div>
+            </div>
+
+            <div class="result-section">
+                <h3>✨ Gloss VSL (Kết quả chuyển đổi)</h3>
+                <div id="vslOutput" class="gloss-output loading">Nhấn nút "Chuyển sang VSL" để xem kết quả chuyển đổi...
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: POS Tags Guide -->
+        <div id="pos-guide" class="tab-content">
+            <h2>📋 Bảng định nghĩa POS Tags</h2>
+            <p>Bảng dưới đây mô tả các loại từ (Part-of-Speech) được sử dụng trong hệ thống phân tích tiếng Việt:</p>
+
+            <table class="pos-table">
+                <thead>
+                    <tr>
+                        <th>Mã POS</th>
+                        <th>Tên tiếng Anh</th>
+                        <th>Tên tiếng Việt</th>
+                        <th>Ví dụ</th>
+                        <th>Mô tả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tag-cell pos-NOUN">NOUN</td>
+                        <td>Noun</td>
+                        <td>Danh từ</td>
+                        <td>cơm, nước, sách</td>
+                        <td>Từ chỉ sự vật, con người, khái niệm</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-PROPN">PROPN</td>
+                        <td>Proper Noun</td>
+                        <td>Danh từ riêng</td>
+                        <td>Hà Nội, Việt Nam, VnCoreNLP</td>
+                        <td>Tên riêng của người, địa danh, tổ chức</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-VERB">VERB</td>
+                        <td>Verb</td>
+                        <td>Động từ</td>
+                        <td>ăn, đi, làm, nói</td>
+                        <td>Từ chỉ hành động, trạng thái</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-ADJ">ADJ</td>
+                        <td>Adjective</td>
+                        <td>Tính từ</td>
+                        <td>đẹp, tốt, cao, nhỏ</td>
+                        <td>Từ miêu tả tính chất, đặc điểm</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-ADV">ADV</td>
+                        <td>Adverb</td>
+                        <td>Trạng từ</td>
+                        <td>nhanh, chậm, rất, cũng</td>
+                        <td>Từ bổ nghĩa cho động từ, tính từ</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-PRON">PRON</td>
+                        <td>Pronoun</td>
+                        <td>Đại từ</td>
+                        <td>tôi, bạn, chúng ta, nó</td>
+                        <td>Từ thay thế cho danh từ</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-NUM">NUM</td>
+                        <td>Number</td>
+                        <td>Số từ</td>
+                        <td>một, hai, nhiều, ít</td>
+                        <td>Từ chỉ số lượng</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-DET">DET</td>
+                        <td>Determiner</td>
+                        <td>Từ hạn định</td>
+                        <td>những, các, một, mỗi</td>
+                        <td>Từ xác định danh từ</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-ADP">ADP</td>
+                        <td>Adposition</td>
+                        <td>Giới từ</td>
+                        <td>ở, từ, với, tại, trong</td>
+                        <td>Từ chỉ quan hệ không gian, thời gian</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-CCONJ">CCONJ</td>
+                        <td>Coordinating Conjunction</td>
+                        <td>Liên từ đẳng lập</td>
+                        <td>và, hoặc, nhưng, mà</td>
+                        <td>Nối các thành phần cùng cấp</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-SCONJ">SCONJ</td>
+                        <td>Subordinating Conjunction</td>
+                        <td>Liên từ phụ thuộc</td>
+                        <td>rằng, nếu, khi, vì</td>
+                        <td>Nối mệnh đề chính và phụ</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-PART">PART</td>
+                        <td>Particle</td>
+                        <td>Trợ từ</td>
+                        <td>đã, rồi, sẽ, đang</td>
+                        <td>Từ chỉ thời, thể, tình thái</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-INTJ">INTJ</td>
+                        <td>Interjection</td>
+                        <td>Thán từ</td>
+                        <td>ôi, ồ, ái, chà</td>
+                        <td>Từ thể hiện cảm xúc</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-PUNCT">PUNCT</td>
+                        <td>Punctuation</td>
+                        <td>Dấu câu</td>
+                        <td>. , ! ? : ;</td>
+                        <td>Ký hiệu ngắt câu</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-SYM">SYM</td>
+                        <td>Symbol</td>
+                        <td>Ký hiệu</td>
+                        <td>%, $, &, @</td>
+                        <td>Ký hiệu đặc biệt</td>
+                    </tr>
+                    <tr>
+                        <td class="tag-cell pos-X">X</td>
+                        <td>Other</td>
+                        <td>Khác</td>
+                        <td>từ ngoại lai, không phân loại</td>
+                        <td>Các từ không thuộc loại nào khác</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tab 3: VSL Principles -->
+        <div id="principles" class="tab-content">
+            <h2>📚 Nguyên lý chuyển đổi từ Tiếng Việt sang VSL</h2>
+
+            <div class="principle-section">
+                <h4>🎯 Nguyên lý cơ bản của VSL (Vietnamese Sign Language)</h4>
+                <p>VSL là ngôn ngữ ký hiệu dựa trên cấu trúc ngữ pháp khác với tiếng Việt nói. Thứ tự từ trong VSL
+                    thường theo quy tắc:</p>
+
+                <div class="vsl-order">
+                    THỜI GIAN → CHỦ NGỮ → TÂN NGỮ → SỐ LƯỢNG → ĐỘNG TỪ → KHÁC → CÂU HỎI / PHỦ ĐỊNH
+                </div>
+
+                <p><strong>Giải thích thứ tự:</strong></p>
+                <ul>
+                    <li><strong>THỜI GIAN (TIME):</strong> Từ chỉ thời gian, địa điểm đặt ở đầu câu</li>
+                    <li><strong>CHỦ NGỮ (S):</strong> Người hoặc vật thực hiện hành động</li>
+                    <li><strong>TÂN NGỮ (O):</strong> Đối tượng chịu tác động của hành động</li>
+                    <li><strong>SỐ LƯỢNG (NUM):</strong> Từ chỉ số lượng, đếm</li>
+                    <li><strong>ĐỘNG TỪ (V):</strong> Hành động chính của câu</li>
+                    <li><strong>KHÁC (OTHER):</strong> Các từ bổ sung khác</li>
+                    <li><strong>CÂU HỎI (ASK):</strong> Từ nghi vấn</li>
+                    <li><strong>PHỦ ĐỊNH (NEG):</strong> Từ phủ định</li>
+                </ul>
+            </div>
+
+            <div class="principle-section">
+                <h4>🔄 Quy trình chuyển đổi</h4>
+                <p>Hệ thống thực hiện 3 bước chính:</p>
+
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div
+                        style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                        <strong>Bước 1: Phân tích cú pháp (POS Tagging)</strong><br>
+                        Sử dụng VnCoreNLP để xác định loại từ và quan hệ cú pháp của mỗi từ trong câu.
+                    </div>
+
+                    <div class="arrow">⬇️</div>
+
+                    <div
+                        style="background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #9c27b0;">
+                        <strong>Bước 2: Phân loại cấu trúc (Structure Extraction)</strong><br>
+                        Nhóm các từ theo chức năng ngữ pháp: S, V, O, NUM, TIME, ASK, NEG, OTHER.
+                    </div>
+
+                    <div class="arrow">⬇️</div>
+
+                    <div
+                        style="background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">
+                        <strong>Bước 3: Sắp xếp lại thứ tự VSL (Reordering)</strong><br>
+                        Sắp xếp lại các nhóm từ theo thứ tự VSL và chuyển thành chữ hoa (gloss format).
+                    </div>
+                </div>
+            </div>
+
+            <div class="principle-section">
+                <h4>💡 Ví dụ minh họa</h4>
+
+                <div class="example-box">
+                    <div class="original">Tiếng Việt: "Hôm nay tôi ăn hai quả táo"</div>
+                    <div class="arrow">⬇️</div>
+                    <div style="margin: 10px 0;">
+                        <strong>Phân tích:</strong>
+                        <ul style="margin: 5px 0; padding-left: 20px;">
+                            <li>TIME: hôm nay</li>
+                            <li>S: tôi</li>
+                            <li>V: ăn</li>
+                            <li>NUM: hai</li>
+                            <li>O: quả táo</li>
+                        </ul>
+                    </div>
+                    <div class="arrow">⬇️</div>
+                    <div class="converted">VSL Gloss: "HÔM NAY TÔI QUẢ TÁO HAI ĂN"</div>
+                </div>
+
+                <div class="example-box">
+                    <div class="original">Tiếng Việt: "Bố không ăn cơm."</div>
+                    <div class="arrow">⬇️</div>
+                    <div style="margin: 10px 0;">
+                        <strong>Phân tích:</strong>
+                        <ul style="margin: 5px 0; padding-left: 20px;">
+                            <li>S: bố</li>
+                            <li>V: ăn</li>
+                            <li>O: cơm</li>
+                            <li>NEG: không</li>
+                        </ul>
+                    </div>
+                    <div class="arrow">⬇️</div>
+                    <div class="converted">VSL Gloss: "BỐ CƠM ĂN KHÔNG"</div>
+                </div>
+
+                <div class="example-box">
+                    <div class="original">Tiếng Việt: "Mẹ nấu cơm ngon"</div>
+                    <div class="arrow">⬇️</div>
+                    <div style="margin: 10px 0;">
+                        <strong>Phân tích:</strong>
+                        <ul style="margin: 5px 0; padding-left: 20px;">
+                            <li>S: mẹ</li>
+                            <li>V: nấu</li>
+                            <li>O: cơm</li>
+                            <li>ADJ: ngon</li>
+                        </ul>
+                    </div>
+                    <div class="arrow">⬇️</div>
+                    <div class="converted">VSL Gloss: "MẸ CƠM NGON NẤU"</div>
+                </div>
+            </div>
+
+            <div class="principle-section">
+                <h4>📝 Lưu ý quan trọng</h4>
+                <ul>
+                    <li>VSL không có thì như tiếng Việt, thông tin thời gian được biểu hiện bằng từ chỉ thời gian</li>
+                    <li>Thứ tự từ trong VSL có thể linh hoạt tùy ngữ cảnh, nhưng có xu hướng chung</li>
+                    <li>Từ phủ định và nghi vấn thường đặt ở cuối câu để nhấn mạnh</li>
+                    <li>Gloss được viết bằng chữ hoa để phân biệt với văn bản thường, trên thực tế cần từ điển để dịch
+                        ngôn ngữ tiếng Việt sang VSL</li>
+                    <li>Hệ thống này chỉ là bước đầu dựa trên mô hình VNCoreNLP, việc dịch chính xác cần kết hợp nhiều
+                        yếu tố khác</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // POS tag color mapping
+        const POS_COLORS = {
+            'NOUN': 'pos-NOUN',
+            'PROPN': 'pos-PROPN',
+            'VERB': 'pos-VERB',
+            'ADJ': 'pos-ADJ',
+            'ADV': 'pos-ADV',
+            'PRON': 'pos-PRON',
+            'NUM': 'pos-NUM',
+            'DET': 'pos-DET',
+            'ADP': 'pos-ADP',
+            'CCONJ': 'pos-CCONJ',
+            'SCONJ': 'pos-SCONJ',
+            'PART': 'pos-PART',
+            'INTJ': 'pos-INTJ',
+            'PUNCT': 'pos-PUNCT',
+            'SYM': 'pos-SYM',
+            'X': 'pos-X'
+        };
+
+        // Create visual POS tag components
+        function createPOSTag(word, posType) {
+            const colorClass = POS_COLORS[posType] || 'pos-X';
+            return `
+        <div class="pos-tag ${colorClass}" title="${posType}: ${word}">
+          <span class="word">${word}</span>
+          <span class="type">${posType}</span>
+        </div>
+      `;
+        }
+
+        // Display POS tags with visual components
+        function displayPOSTags(tokens) {
+            const container = document.getElementById('posOutput');
+            container.className = '';
+
+            if (!tokens || tokens.length === 0) {
+                container.innerHTML = '<div class="error">Không có tokens để hiển thị</div>';
+                return;
+            }
+
+            let html = '<div class="pos-container">';
+
+            tokens.forEach(token => {
+                // Parse token format: "word - POS"
+                const parts = token.split(' - ');
+                if (parts.length >= 2) {
+                    const word = parts[0].trim();
+                    const posType = parts[1].trim();
+                    html += createPOSTag(word, posType);
+                }
+            });
+
+            html += '</div>';
+
+            // Add text version for reference
+            html += '<div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 5px; font-family: monospace; font-size: 12px; color: #666;">';
+            html += '<strong>Chi tiết:</strong><br>';
+            html += tokens.join('<br>');
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        async function processInput() {
+            const text = document.getElementById("inputText").value.trim();
+            const convertBtn = document.getElementById("convertBtn");
+            const statusDiv = document.getElementById("status");
+            const posOutput = document.getElementById("posOutput");
+            const vslOutput = document.getElementById("vslOutput");
+
+            if (!text) {
+                alert("Vui lòng nhập câu tiếng Việt!");
+                return;
+            }
+
+            // Disable button and show loading
+            convertBtn.disabled = true;
+            convertBtn.textContent = "⏳ Đang xử lý...";
+            statusDiv.textContent = "Đang gửi yêu cầu đến server...";
+
+            posOutput.innerHTML = '<div class="loading">Đang phân tích từ loại...</div>';
+            vslOutput.innerHTML = '<div class="loading">Đang chuyển đổi sang VSL...</div>';
+            vslOutput.className = "gloss-output loading";
+
+            try {
+                statusDiv.textContent = "Đang phân tích câu...";
+
+                // Auto-detect API endpoint
+                const apiUrl = window.location.hostname === 'localhost' && window.location.port === '80'
+                    ? '/api/convert'  // If served through nginx
+                    : 'http://127.0.0.1:8000/convert';  // Direct API access
+
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }                // Display POS tags with visual components
+                displayPOSTags(data.tokens);
+
+                // Display VSL gloss
+                vslOutput.innerHTML = data.gloss;
+                vslOutput.className = "gloss-output";
+
+                statusDiv.textContent = "✅ Hoàn thành!";
+
+                // Add some animation
+                vslOutput.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    vslOutput.style.transform = 'scale(1)';
+                    vslOutput.style.transition = 'transform 0.3s ease';
+                }, 100);
+
+            } catch (error) {
+                console.error("Error:", error);
+
+                posOutput.innerHTML = `<div class="error">❌ Lỗi: ${error.message}</div>`;
+                vslOutput.innerHTML = `<div class="error">❌ Lỗi: ${error.message}</div>`;
+                vslOutput.className = "gloss-output error";
+
+                statusDiv.textContent = "❌ Có lỗi xảy ra. Vui lòng kiểm tra server API.";
+            } finally {
+                // Re-enable button
+                convertBtn.disabled = false;
+                convertBtn.textContent = "🚀 Chuyển sang VSL";
+            }
+        }
+
+        // Allow Enter key to trigger conversion
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById("inputText").addEventListener("keydown", function (event) {
+                if (event.ctrlKey && event.key === "Enter") {
+                    processInput();
+                }
+            });
+
+            // Add some example sentences for quick testing
+            const examples = [
+                "Tôi đang ăn cơm",
+                "Hôm nay mẹ nấu phở",
+                "Bạn có thích học tiếng Anh không?",
+                "Anh ấy không đi làm",
+                "Năm ngoái tôi đã du lịch Đà Nẵng",
+                "Cô giáo dạy học sinh môn toán"
+            ];
+
+            // Add examples as a dropdown or suggestion list
+            const textarea = document.getElementById("inputText");
+            textarea.addEventListener('focus', function () {
+                if (this.value === examples[0]) {
+                    this.select();
+                }
+            });
+
+            // Add double-click to cycle through examples
+            textarea.addEventListener('dblclick', function () {
+                const currentIndex = examples.indexOf(this.value);
+                const nextIndex = (currentIndex + 1) % examples.length;
+                this.value = examples[nextIndex];
+            });
+        });
+    </script>
+</body>
+
+</html>

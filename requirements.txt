@@ -1,0 +1,7 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+pydantic==2.11.7
+vncorenlp==1.0.3
+py-vncorenlp==0.1.4
+requests==2.32.4
+jnius==1.6.1
